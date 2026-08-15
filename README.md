@@ -68,7 +68,7 @@ cd ~/6809
 ### 2. シミュレータ（`exec09`）のビルド
 ```bash
 cd exec09
-./configure
+./configure --enable-readline
 make
 cd ..
 ```
