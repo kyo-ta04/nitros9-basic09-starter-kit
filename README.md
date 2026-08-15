@@ -59,10 +59,10 @@ sudo make -C build/unix install
 
 ## クイックスタート
 
-### 1. リポジトリのクローン（サブモジュールも同時に取得）
+### 1. リポジトリのクローン（サブモジュールも同時に取得、ディレクトリは ~/6809 ）
 ```bash
-git clone --recursive https://github.com/kyo-ta04/nitros9-basic09-starter-kit.git
-cd nitros9-basic09-starter-kit
+git clone --recursive https://github.com/kyo-ta04/nitros9-basic09-starter-kit.git ~/6809
+cd ~/6809
 ```
 
 ### 2. シミュレータ（`exec09`）のビルド
@@ -114,6 +114,12 @@ BASIC09 に特化したスリムなOSディスクイメージを使用するこ�
    B:
    ```
    これで BASIC09 のプログラムを入力・実行できる状態（Ready）になります。
+
+---
+
+## 実行例
+![画像1](./img/img1.png)
+![画像2](./img/img2.png)
 
 ---
 
