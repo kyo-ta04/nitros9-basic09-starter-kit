@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=DiskShed
+Comment=Browse and edit OS-9 and Disk BASIC disk images
+Exec=DiskShed %F
+Icon=org.nitros9.diskshed
+Terminal=false
+Categories=Utility;FileTools;
+MimeType=application/octet-stream;

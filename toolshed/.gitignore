@@ -1,0 +1,85 @@
+# Originals
+.DS_Store
+*.cas
+*.c10
+*.wav
+filldisk.dsk
+
+# Ignore built files
+build/unix/ar2/ar2
+build/unix/cecb/cecb
+build/unix/cocofuse/cocofuse
+build/unix/decb/decb
+build/unix/dis68/dis68
+build/unix/doc/ToolShed.html
+build/unix/lst2cmt/lst2cmt
+build/unix/makewav/makewav
+build/unix/mamou/mamou
+build/unix/os9/os9
+build/unix/tocgen/tocgen
+build/unix/unittest/decbcommandtest
+build/unix/unittest/libcecbtest
+build/unix/unittest/libdecbtest
+build/unix/unittest/librbftest
+build/unix/unittest/libtoolshedtest
+build/unix/unittest/os9commandtest
+build/unix/unittest/test.dsk
+build/unix/unittest/test_alloc.dsk
+build/unix/unittest/empty_file
+
+# Language file for BBEdit
+compile_commands.json
+.cache/*
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf

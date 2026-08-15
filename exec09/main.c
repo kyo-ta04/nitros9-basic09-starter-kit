@@ -1,0 +1,517 @@
+/*
+ * Copyright 2001 by Arto Salmi and Joze Fabcic
+ * Copyright 2006-2008 by Brian Dominy <brian@oddchange.com>
+ *
+ * This file is part of GCC6809.
+ *
+ * GCC6809 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * GCC6809 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GCC6809; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
+
+#include <sys/time.h>
+#include <unistd.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "6809.h"
+#include "command.h"
+#include "symtab.h"
+#include "machine.h"
+#include "monitor.h"
+
+/* The total number of cycles that have executed */
+unsigned long total = 0;
+
+/* Emulated CPU clock in kHz. Default 1000 = 1 MHz.
+   68A09 -> 1500 (1.5 MHz), 68B09 -> 2000 (2 MHz). */
+unsigned int cpu_khz = 1000;
+
+/* When nonzero, indicates that the machine's tick routine should be
+   triggered periodically, every so many cycles. Typically this is
+   used by the machine to generate a timer interrupt. Off By default.
+*/
+unsigned int cycles_per_tick = 0;
+
+/* Nonzero if debugging support is turned on */
+int debug_enabled = 0;
+
+/* Nonzero if tracing is enabled */
+int trace_enabled = 0;
+
+/* Nonzero if SWI2 should be reported with a postbyte */
+int os9call = 0;
+
+/* When nonzero, causes the program to print the total number of cycles
+on a successful exit. */
+int dump_cycles_on_success = 0;
+
+/* When nonzero, indicates the total number of cycles before an automated
+exit.  This is to help speed through test cases that never finish. */
+int max_cycles = INT_MAX;
+
+/* When nonzero, says that the state of the machine is persistent
+across runs of the simulator. */
+int machine_persistent = 0;
+
+/* When nonzero, says that the simulator is slowed down to match what a real
+processor would run like. */
+int machine_realtime = 0;
+
+static int binary = 0;
+
+char *exename;
+
+const char *machine_name = "simple";
+
+const char *prog_name = NULL;
+
+FILE *stat_file = NULL;
+
+struct timeval time_started;
+
+
+/**
+ * Return elapsed real time in milliseconds.
+ */
+long
+time_diff (struct timeval *old, struct timeval *new)
+{
+	long ms = (new->tv_usec - old->tv_usec) / 1000;
+	ms += (new->tv_sec - old->tv_sec) * 1000;
+	return ms;
+}
+
+
+long
+get_elapsed_realtime (void)
+{
+	struct timeval now;
+	gettimeofday (&now, NULL);
+	return time_diff (&time_started, &now);
+}
+
+
+/*
+ * Called after each CPU quantum.  Tracks sim time for periodic hooks,
+ * and when -R / --realtime is set, sleeps so wall time tracks rated MHz.
+ *
+ * Timing: measure wall time for the CPU work only, then sleep.  After
+ * sleep, reset the wall-clock anchor so the next measure does not include
+ * the sleep (otherwise we under-sleep by ~2x).
+ */
+void
+idle_loop (void)
+{
+	struct timeval now;
+    static struct timeval work_start = { 0, 0 };
+	static unsigned long last_cycles = 0;
+	static int total_ms_elapsed = 0;
+    static long cumulative_delay_us = 0;
+    unsigned long cycles;
+    unsigned int cycles_per_ms;
+    int sim_ms;
+    long work_us;
+    long sim_us;
+    long sleep_us;
+    
+    cycles = get_cycles ();
+    cycles_per_ms = cpu_khz ? cpu_khz : 1000;
+ 
+    if (work_start.tv_sec == 0 && work_start.tv_usec == 0)
+    {
+        /* First call: anchor after the first quantum already ran. */
+        gettimeofday (&work_start, NULL);
+        last_cycles = cycles;
+        return;
+    }
+
+	gettimeofday (&now, NULL);
+    work_us = (long)(now.tv_sec - work_start.tv_sec) * 1000000L
+        + (long)(now.tv_usec - work_start.tv_usec);
+    if (work_us < 0)
+        work_us = 0;
+    
+    sim_ms = (int)((cycles - last_cycles) / cycles_per_ms);
+    if (sim_ms < 0)
+        sim_ms = 0;
+    last_cycles = cycles;
+
+	total_ms_elapsed += sim_ms;
+	if (total_ms_elapsed > 100)
+	{
+		total_ms_elapsed -= 100;
+		if (machine->periodic) machine->periodic ();
+		command_periodic ();
+	}
+
+    if (machine_realtime)
+	{
+        sim_us = (long)sim_ms * 1000L;
+        cumulative_delay_us += sim_us - work_us;
+ 
+        if (cumulative_delay_us > 1000L)
+        {
+            sleep_us = cumulative_delay_us;
+            /* Cap so debug / signals stay responsive */
+            if (sleep_us > 100000L)
+                sleep_us = 100000L;
+            usleep ((useconds_t)sleep_us);
+            cumulative_delay_us -= sleep_us;
+        }
+        else if (cumulative_delay_us < -50000L)
+        {
+            /* Host too slow; avoid unbounded negative debt */
+            cumulative_delay_us = 0;
+        }
+	}
+
+    /* Next quantum's work-time starts now (after any sleep). */
+    gettimeofday (&work_start, NULL);
+}
+
+
+int do_help (const char *arg __attribute__((unused)));
+
+/* -M / --mhz ARG : set clock in MHz (integer or decimal, e.g. 1, 1.5, 2) */
+static int
+do_mhz (const char *arg)
+{
+    char *end = NULL;
+    double m;
+ 
+    if (!arg || !*arg)
+    {
+        fprintf (stderr, "option --mhz requires an argument (e.g. 1, 1.5, 2)\n");
+        return -1;
+    }
+    m = strtod (arg, &end);
+    if (end == arg || m <= 0.0)
+    {
+        fprintf (stderr, "invalid --mhz value '%s'\n", arg);
+        return -1;
+    }
+    /* Store as kHz so 1.5 MHz is exact */
+    cpu_khz = (unsigned int)(m * 1000.0 + 0.5);
+    return 1; /* consumed the argument */
+}
+ 
+/* --68a09 : 1.5 MHz 68A09 */
+static int
+do_68a09 (const char *arg __attribute__((unused)))
+{
+    cpu_khz = 1500;
+    return 0;
+}
+ 
+/* --68b09 : 2 MHz 68B09 */
+static int
+do_68b09 (const char *arg __attribute__((unused)))
+{
+    cpu_khz = 2000;
+    return 0;
+}
+ 
+#define NO_NEG    0
+#define HAS_NEG   1
+
+#define NO_ARG    0
+#define HAS_ARG   1
+
+
+struct option
+{
+	char o_short;
+	const char *o_long;
+	const char *help;
+	unsigned int can_negate : 1;
+	unsigned int takes_arg : 1;
+        int *int_value;
+	int default_value; /* value to set if option is present */
+	const char **string_value;
+	int (*handler) (const char *arg);
+} option_table[] = {
+	{ 'd', "debug", "Enter the monitor immediately",
+		HAS_NEG, NO_ARG, &debug_enabled, 1, NULL, NULL },
+	{ 'h', "help", NULL,
+		NO_NEG, NO_ARG, NULL, 0, 0, do_help },
+	{ 'b', "binary", "",
+		NO_NEG, NO_ARG, &binary, 1, NULL, NULL },
+    { 'M', "mhz", "Set CPU clock in MHz (e.g. 1, 1.5, 2)",
+        NO_NEG, HAS_ARG, NULL, 0, NULL, do_mhz },
+    { '-', "68a09", "Emulate the 68A09 variation (1.5 MHz)",
+        NO_NEG, NO_ARG, NULL, 0, NULL, do_68a09 },
+    { '-', "68b09", "Emulate the 68B09 variation (2 MHz)",
+        NO_NEG, NO_ARG, NULL, 0, NULL, do_68b09 },
+	{ 'R', "realtime", "Limit simulation speed to match realtime",
+        HAS_NEG, NO_ARG, &machine_realtime, 1, NULL, NULL },
+	{ 'I', "tIckfreq", "Automatically calls the machine's tick every so many cycles",
+		NO_NEG, HAS_ARG, &cycles_per_tick, 0, NULL, NULL },
+	{ 'C', "cycledump", "",
+		HAS_NEG, NO_ARG, &dump_cycles_on_success, 1, NULL, NULL},
+	{ 'o', "os9call", "Treat SWI2 as an OS9/NitrOS9 system call and report postbyte",
+		HAS_NEG, NO_ARG, &os9call, 1, NULL, NULL},
+	{ 't', "loadmap", "" },
+	{ 'T', "trace", "",
+		NO_NEG, NO_ARG, &trace_enabled, 1, NULL, NULL },
+	{ 'm', "maxcycles", "Set maximum number of cycles to run (0 to disable)",
+		NO_NEG, HAS_ARG, &max_cycles, 0, NULL, NULL },
+	{ 's', "machine", "Specify the machine (exact hardware) to emulate",
+		NO_NEG, HAS_ARG, NULL, 0, &machine_name, NULL },
+	{ 'p', "persistent", "Use persistent machine state",
+		NO_NEG, NO_ARG, &machine_persistent, 1, NULL, NULL },
+	{ '\0', NULL },
+};
+
+
+int
+do_help (const char *arg __attribute__((unused)))
+{
+	struct option *opt = option_table;
+
+	printf ("Motorola 6809 Simulator     Version %s\n", PACKAGE_VERSION);
+	printf ("m6809-run [options] [program]\n\n");
+	printf ("Options:\n");
+	while (opt->o_long != NULL)
+	{
+		if (opt->help)
+		{
+			if (opt->o_short == '-')
+				printf ("   --%-16.16s    %s\n", opt->o_long, opt->help);
+			else
+				printf ("   -%c, --%-16.16s%s\n", opt->o_short, opt->o_long, opt->help);
+		}
+		opt++;
+	}
+	exit (0);
+}
+
+
+void usage (void)
+{
+	do_help (NULL);
+}
+
+
+/**
+ * Returns positive if an argument was taken.
+ * Returns zero if no argument was taken.
+ * Returns negative on error.
+ */
+int
+process_option (struct option *opt, const char *arg)
+{
+	int rc;
+	//printf ("Processing option '%s'\n", opt->o_long);
+	if (opt->takes_arg)
+	{
+		if (!arg)
+		{
+			//printf ("  Takes argument but none given.\n");
+			rc = 0;
+		}
+		else
+		{
+			if (opt->int_value)
+			{
+				*(opt->int_value) = strtoul (arg, NULL, 0);
+				//printf ("  Integer argument '%d' taken.\n", *(opt->int_value));
+			}
+			else if (opt->string_value)
+			{
+				*(opt->string_value) = arg;
+				//printf ("  String argument '%s' taken.\n", *(opt->string_value));
+			}
+			rc = 1;
+		}
+	}
+	else
+	{
+		if (arg)
+		{
+			//printf ("  Takes no argument but one given, ignored.\n");
+		}
+
+		if (opt->int_value)
+		{
+			*(opt->int_value) = opt->default_value;
+			//printf ("  Integer argument 1 implied.\n");
+		}
+		rc = 0;
+	}
+
+	if (opt->handler)
+	{
+		rc = opt->handler (arg);
+		//printf ("  Handler called, rc=%d\n", rc);
+	}
+
+	if (rc < 0)
+		sim_exit (0x70);
+	return rc;
+}
+
+
+void
+process_plain_argument (const char *arg)
+{
+	//printf ("plain argument '%s'\n", arg);
+	if (!prog_name)
+		prog_name = arg;
+}
+
+
+void
+parse_args (int argc, char *argv[])
+{
+	int argn = 1;
+	struct option *opt;
+
+next_arg:
+	while (argn < argc)
+	{
+		char *arg = argv[argn];
+		if (arg[0] == '-')
+		{
+			if (arg[1] == '-')
+			{
+				char *rest = strchr (arg+2, '=');
+				if (rest)
+					*rest++ = '\0';
+
+				opt = option_table;
+				while (opt->o_long != NULL)
+				{
+					if (!strcmp (opt->o_long, arg+2))
+					{
+						argn++;
+						(void)process_option (opt, rest);
+						goto next_arg;
+					}
+					opt++;
+				}
+				printf ("long option '%s' not recognized.\n", arg+2);
+			}
+			else
+			{
+				opt = option_table;
+				while (opt->o_long != NULL)
+				{
+					if (opt->o_short == arg[1])
+					{
+						argn++;
+						if (process_option (opt, argv[argn]))
+							argn++;
+						goto next_arg;
+					}
+					opt++;
+				}
+				printf ("short option '%c' not recognized.\n", arg[1]);
+			}
+			argn++;
+		}
+		else
+		{
+			process_plain_argument (argv[argn++]);
+		}
+	}
+}
+
+
+
+int
+main (int argc, char *argv[])
+{
+  gettimeofday (&time_started, NULL);
+
+  exename = argv[0];
+  /* TODO - enable different options by default
+  based on the executable name. */
+
+	parse_args (argc, argv);
+
+	sym_init ();
+
+	if (binary)
+	{
+		machine_init (machine_name, prog_name);
+	}
+	else
+	{
+		/* The machine loader cannot deal with image files,
+		so initialize the machine first, passing it a NULL
+		filename, then load the image file afterwards. */
+		machine_init (machine_name, NULL);
+		if (prog_name && load_image (prog_name))
+			usage ();
+	}
+
+	/* Try to load a map file */
+	if (prog_name)
+		load_map_file (prog_name);
+
+	/* Enable debugging if no executable given yet. */
+	if (!prog_name)
+	{
+		debug_enabled = 1;
+	}
+	else
+	{
+		/* OK, ready to run.  Reset the CPU first. */
+		cpu_reset ();
+	}
+
+	monitor_init ();
+	command_init ();
+        keybuffering_defaults ();
+	keybuffering (0);
+
+	/* Now, iterate through the instructions.
+           Without -I, we can just call cpu_execute() and let it run
+           for a long time; otherwise, we need to come back here
+           periodically and call the machine's ->tick() routine */
+        //[NAC HACK 2017Mar30] need to schedule this properly instead of this one-or-the-other approach
+        //.. need to track the rate of each and work out who's next.
+	for (cpu_quit = 1; cpu_quit != 0;)
+	{
+		/* Call each device that needs periodic processing. */
+		machine_update ();
+
+		if (cycles_per_tick == 0)
+		{
+            /* ~1 ms of CPU time at the configured clock
+               (cpu_khz cycles ? 1 ms; *1024/1000 keeps prior scale) */
+            total += cpu_execute ((cpu_khz * 1024UL) / 1000);
+		}
+		else
+		{
+			total += cpu_execute (cycles_per_tick);
+			if (machine->tick) machine->tick ();
+		}
+
+		idle_loop ();
+
+		/* Check for a rogue program that won't end */
+		if ((max_cycles > 0) && (total > max_cycles))
+		{
+			sim_error ("maximum cycle count exceeded at %s\n",
+				monitor_addr_name (get_pc ()));
+		}
+	}
+
+	sim_exit (0);
+	keybuffering (1);
+	return 0;
+}

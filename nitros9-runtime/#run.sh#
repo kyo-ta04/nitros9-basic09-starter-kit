@@ -1,0 +1,18 @@
+#!/bin/sh
+# Boot NitrOS-9 Level 1 (mc09) on exec09 multicomp09 through the Time? prompt.
+set -e
+RT="$(CDPATH= cd -- "$(dirname "$0")" && pwd)"
+RUN="${M6809_RUN:-~/6809/exec09/m6809-run}"
+
+cd "$RT"
+test -x "$RUN" || { echo "missing m6809-run: $RUN" >&2; exit 1; }
+test -f 6809M.bin || { echo "missing 6809M.bin — run rebuild-runtime.sh" >&2; exit 1; }
+test -f multicomp09_sd.img || { echo "missing multicomp09_sd.img — run rebuild-runtime.sh" >&2; exit 1; }
+
+printf 'NITROS9\r' > multicomp09.bat
+
+# -I 20000 ≈ 50 Hz tick at 1 MHz
+# -m 0 disables the cycle cap. Default max_cycles is INT_MAX (~2e9);
+# while setime waits for keys it still burns ticks (Sleep1), so the cap
+# can hit mid-typing ("2026/08/" then exit).
+exec "$RUN" -s multicomp09 -b 6809M.bin -I 20000 -m 0 "$@"

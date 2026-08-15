@@ -1,0 +1,5 @@
+# MD5 checksums for original ROMs
+c2fc43556eb6b7b25bdf5955bd9df825  bas13.rom
+21070aa0496142b886c562bf76d7c113  extbas11.rom
+8cab28f4b7311b8df63c07bb3b59bfd5  disk11.rom
+7233c6c429f3ce1c7392f28a933e0b6f  coco3.rom

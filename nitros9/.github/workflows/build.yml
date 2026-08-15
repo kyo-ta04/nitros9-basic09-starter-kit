@@ -1,0 +1,100 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - '*'
+  pull_request:
+    branches:
+      - main
+      - '*'
+
+env:
+  # Path to the solution file relative to the root of the project.
+  SOLUTION_FILE_PATH: .
+  LANGUAGES: ${{ github.workspace }}/nitros9-languages
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: read
+
+defaults:
+    run:
+        shell: bash {0}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+#
+# Prepare environment with necessary packages.
+# disabled for now, uncomment if need to install package
+#    - name: Setup Requirements
+#      run: |
+#        sudo apt-get install mingw-w64
+
+    - name: Checkout
+      uses: actions/checkout@v5
+
+    - name: Checkout NitrOS-9 languages
+      uses: actions/checkout@v5
+      with:
+        repository: nitros9project/nitros9-languages
+        path: nitros9-languages
+
+#
+# Cache LwTools, if no cache key entry exists a new one will be created upon a successful build.
+# This will store the entries in 'path:' in a zip file, conveniently they all start with 'lw'
+#
+    - name: Cache LwTools
+      id: cache-lwtools
+      uses: actions/cache@v5
+      env:
+        cache-name: cache-lwtools
+      with:
+        path: /usr/local/bin/lw*
+        key: lwtools-4.24
+
+#
+# Fetch latest toolshed from the official repo.
+#
+    - name: Fetch Toolshed
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        mkdir -p toolshed
+        # Find the newest tag that starts with 'v' (ignoring DiskShed-*)
+        TOOLSHED_TAG=$(gh release list -R nitros9project/toolshed --limit 30 \
+          | awk '{print $1}' | grep -E '^v[0-9]' | head -n 1)
+
+        # Download the matching asset from that specific release
+        gh release download "$TOOLSHED_TAG" -R nitros9project/toolshed \
+          -p "toolshed-unix*.tgz" -D toolshed
+
+#
+# Unzip fetched toolshed binaries directly into /usr/local/bin
+#
+
+    - name: Install Toolshed
+      run: |
+        sudo tar xvf toolshed/toolshed-unix*.tgz --strip-components=1 -C /usr/local/bin
+
+#
+# If LwTools was cached last time, we can skip this step.
+# otherwise fetch it, build and install to /usr/local/bin.
+#
+    - if: ${{ steps.cache-lwtools.outputs.cache-hit != 'true' }}
+      name: Install Lwtools
+      run: |
+        sudo bash ./.github/workflows/lwtools.sh
+
+#
+# Trial build all nitros9 targets.
+#
+    - name: Build NitrOS9
+      run: |
+        sudo bash ./.github/workflows/nitros9.sh
+      

@@ -1,0 +1,395 @@
+@ASM
+Syntax: Asm filename [<opts>] [>list]
+Usage : Standard NitrOS-9 Assembler
+@ATTR
+Syntax: Attr filename [<opts>] [<perms>]
+Usage : Examine or change the security permissions of a file
+Opts  :
+  -perm = turn off specified permission
+   perm = turn on specified permission
+  -a = inhibit printing of attrs after change     
+Perms :
+  d - directory file
+  s - non-sharable file
+  r - read permit to owner
+  w - write permit to owner
+  e - execute permit to owner
+  pr - read permit to public
+  pw - write permit to public
+  pe - execute permit to public
+@BACKUP
+Syntax: Backup [<opts>] [<srcdev>] [<destdev>]
+Usage : Copies all data from one device to another
+Opts  :
+  e = exit if read error occurs
+  f = backup from file
+  s = single disk backup
+  -v = do not verify writes
+@BINEX
+Syntax: Binex <path1> <path2>
+Usage : Convert Binary to S-Record format
+@BUILD
+Syntax: Build <path>
+Usage : Builds short text files from standard input
+@CHD
+Syntax: Chd <pathlist>
+Usage : Change working directory to specified path
+@CHX
+Syntax: Chx <pathlist>
+Usage : Change execution directory to specified path
+@CMP
+Syntax: Cmp <path1> <path2>
+Usage : File comparison utility
+@COBBLER
+Syntax: Cobbler <devname> [<opt>]
+Usage : Creates NitrOS-9 bootstrap file from current boot
+Opt   :
+  -e = permit fragmented boot. This should be used when
+       fragmentation is reported.
+@CONFIG
+Syntax: Config
+Usage : Create custom boots and system disks
+@COPY
+Syntax: Copy [<opts>] <srcpath> [<dstpath>] [<opts>]
+Usage : Copies files
+Opts  :
+  -a = abort on error
+  -p = don't print files copied (use with -w)
+  -r = rewrite destination
+  -s = single drive copy 
+  -v = verify the copy
+  -w=<dir> = copy to <dir>
+  -x = copy from exec dir
+@CPUTYPE
+Syntax: CPUType
+Usage : Displays type of CPU being used
+@DATE
+Syntax: Date [<opts>]
+Usage : Displays current system date
+Opts  :
+  -t = display time also
+@DCHECK
+Syntax: Dcheck [<opts>] <devname>
+Usage : Check disk file structure
+Opts  :
+  -w=path = pathlist to directory for work files
+  -p = print pathlists for questionable clusters
+  -m = save allocation map work files
+  -b = suppress listing of unused clusters
+  -s = display count of files and directories only
+  -o = print options for DCheck
+@DEBUG
+Syntax: Debug
+Usage : Interactive Debugger
+
+Debug command summary:
+
+[SPACE]expression     Evaluate expression; display result in
+                      hex and decimal form.
+.                     Display Dot address and contents.
+..                    Restore last Dot address; display address
+                      and contents.
+.expression           Set Dot to result of expression; display
+                      address and contents.
+=expression           Set memory at Dot to result of expression.
+-                     Decrement Dot; display address and
+                      contents.
+[ENTER]               Increment Dot; display address and
+                      contents.
+
+:                     Display all registers' contents.
+:register             Display specified register's contents.
+:register expression  Set specified register to result of
+                      expression.
+
+E module-name         Prepare for execution.
+G                     Go to the program.
+G expression          Go to the program at the address specified
+                      by the result of expression.
+L module-name         Link to module-name; display address.
+
+B                     Display all breakpoints.
+B expression          Set a breakpoint at the address specified
+                      by expression.
+K                     Kill (remove) all breakpoints.
+K expression          Kill breakpoint at the address specified
+                      by expression.
+
+M expr1 expr2         Display memory from expr1 to expr2.
+C expr1 expr2         Clear and test memory from expr1 to expr2.
+S expr2 expr2         Search memory from Dot to expr1 for
+                      value expr2.
+
+$text                 Call OS-9 shell.
+
+Q                     Quit (exit) debug.
+
+The full manual is here:
+https://sourceforge.net/p/nitros9/wiki/Interactive_Debugger
+@DED
+Syntax: dEd </device>
+Usage : Binary Disk Editor
+@DEINIZ
+Syntax: Deiniz <devname> {<devname>}
+Usage : Detach one or more devices
+@DEL
+Syntax: Del [<opts>] <path> [<path>] [<opts>]
+Usage : Deletes one or more files
+Opts  :
+  -x = delete relative to execution directory
+@DELDIR
+Syntax: Deldir <path>
+Usage : Deletes entire directories
+@DEVS
+Syntax: Devs
+Usage : Display IOMan's device table entries
+@DIR
+Syntax: Dir [<opts>] [<path>]
+Usage : Displays formatted list of the file names in a directory
+Opts  :
+  -e = extended dir
+  -x = execution dir
+@DIRSORT
+Syntax: dirsort [<path>]
+         Default path is current directory .
+         Dot names ., .., ..., etc. may be use and full or partial path names.
+         ex.  dirsort graphics       dirsort /dd/cmds     dirsort ...
+Usage : Sorts the contents of a directory placing all capitalized names first.
+         That will place subdirectories first if the convention of making
+         directory names upper case is followed. All deleted directory names
+         are placed invisibly placed at the end. That means new entries will
+         appear at the end of the directory list.
+@DISASM
+Syntax: Disasm [<opts>] [<pathlist>]
+Usage : 6809/6309 disassembler
+Opts  :
+ -m = disassemble module in memory
+ -o = display other information
+ -s = indicate disassembly start and end
+      addresses: -s$ssss$eeee
+ -u = don't convert U/DP offsets to labels
+ -x = file is in execution directory
+ -z = disassemble from standard input
+@DISPLAY
+Syntax: Display <opts>
+Usage : Displays converted characters to standard output
+Opts  :
+  xx   = hexadecimal
+  .xx  = decimal byte
+  .Wxx = decimal word
+  /xx/ = string
+  "xx" = string
+@DMODE
+Syntax: DMode <devname> [params]
+Usage : Displays or changes the parameters of an RBF device
+@DSAVE
+Syntax: Dsave [<opts>] [<to path>]
+Usage : Generates procedure file to copy all files from the
+        current directory to <to path>
+Opts  :
+  -b = make a system disk by using OS9boot if present
+  -b=<path> = make system disk using path as source
+  -i = indent for directory levels
+  -l = do not process below the current level
+  -m = do not include makdir commands in procedure file
+  -n = don't load copy/cmp
+  -r = force rewrite of file on copy
+  -s<num> = set copy size to num K
+  -t = don't issue tmode (pause/nopause)
+  -v = verify copies
+
+Examples:
+   Create a script to copy /h0 to /h5 with forced rewrite:
+       chd /h0; dsave -r /h5 > dsave.out
+
+   Immediately copy /d0 to /d1 with a 24K copy buffer:
+       chd /d0; dsave -s24 /d1 ! shell -p
+@DUMP
+Syntax: Dump [<opts>] [<path>] [<opts>]
+Usage : Formatted file dump in hexadecimal and ASCII
+Opts  :
+  -h = no header
+  -m = module in memory
+  -x = file in exec dir
+@ECHO
+Syntax: Echo <text>
+Usage : Echo entered text to standard output
+@EDIT
+Syntax: Edit [<path>]
+Usage : Standard line oriented text editor
+@ERROR
+Syntax: Error <errno> [<errno> [...]]
+Usage : Outputs text error message(s) for given error number(s)
+
+The error messages are extracted from /DD/SYS/errmsg
+@EX
+Syntax: Ex <modname>
+Usage : Chain to the given module 
+@EXBIN
+Syntax: Exbin <path1> <path2>
+Usage : Convert S-Record format to Binary
+@FORMAT
+Syntax: Format <devname> 
+Usage : Initializes a NitrOS-9 diskette
+Opts  :
+  R   - Ready
+  L   - Logical format only
+  "disk name"       
+  1/2 - number of sides
+  'No. of cylinders'   (in decimal)
+  :Interleave value:   (in decimal)
+  /Cluster size/       (in decimal)
+@FREE
+Syntax: Free [<devname>]
+Usage : Displays number of free sectors on a device
+@GFX
+Syntax: RUN GFX(<func>,<args>)
+Usage : Graphics interface package for BASIC09 to do compatible
+        VDG graphics commands
+@HELP
+Syntax: Help [<subject>]
+Usage : Give on-line help on subject
+        will prompt if no subjects given
+
+The help text is extracted from the file /DD/SYS/helpmsg
+
+Entries in helpmsg are in plain text. An entry for subject FOO
+starts with a line containing the text "@FOO". helpmsg is
+typically created by concatenating a set of per-subject .hp files.
+@IDENT
+Syntax: Ident [<opts>] <path> [<opts>]
+Usage : Displays header information from NitrOS-9 memory modules
+Opts  :
+  -m = module in memory
+  -s = short form
+  -v = don't verify CRC
+  -x = file in exec dir
+@INIZ
+Syntax: Iniz <devname> [<devname> [...]]
+Usage : Attach one or more devices
+@INKEY
+Syntax: RUN INKEY([path],strvar)
+Usage : BASIC09 subroutine to input a single key stroke
+@IRQS
+Syntax: Irqs
+Usage : Display interrupt table entries
+@KILL
+Syntax: Kill <procId>
+Usage : Send an abort to the process specified
+@LINK
+Syntax: Link <modname>
+Usage : Link to a memory module
+@LIST
+Syntax: List <path> [<path> [...]]
+Usage : Lists the contents of text files
+@LOAD
+Syntax: Load <pathlist> [<pathlist> [...]]
+Usage : Loads modules into memory 
+@LOGIN
+Syntax: Login
+Usage : Timesharing System Log-In
+@MAKDIR
+Syntax: Makdir <pathlist>
+Usage : Creates a new directory file 
+@MDIR
+Syntax: Mdir [<opts>]
+Usage : Displays the present memory module directory
+Opts  :
+  -e = print extended module directory
+@MEGAREAD
+Syntax: megaread [#####] </dev
+Usage : Measures disk performance
+Opts  : ##### = number of 1K blocks to read, default 1024
+@MERGE
+Syntax: Merge <path> [<path> [...]]
+Usage : Copies multiple input files to standard output
+Opts  :
+  -z = get list of files from standard input
+
+@MINTEDSyntax : minted [<text>]Usage : Minimalist text editorHot keys:Ctrl+S      = Save fileCtrl+R      = Rename fileCtrl+K      = Delete lineCtrl+D      = Duplicate lineCtrl+O      = Online helpCtrl+E      = Exit/escCtrl+G      = Go to linectrl+U      = UndoCursor keys = Move cursorShift+Left  = Delete leftShift+Right = Delete rightShift+Up    = Page upShift+Down  = Page downCtrl+Left   = Go to line beginCtrl+Right  = Go to line end@MPI
+Syntax: mpi
+Usage : Displays presence of a Multi-Pak
+@MFREE
+Syntax: Mfree 
+Usage : Displays the amount of free RAM memory
+@OS9GEN
+Syntax: OS9Gen devname [<opts>]
+Usage : Creates and links a NitrOS-9 bootstrap file
+Opts  :
+  -e = extended boot (fragmented)
+  -q=<path> = quick gen .. set sector zero pointing to <path>
+  -r = remove pointer to boot file (does not delete file)
+  -s = single drive option
+  -t=<boottrack> = boot track file to use
+@PADROM
+Syntax: PadROM <padsize> <pathlist> [<devname>] [<opts>]
+Usage : Pads a file to 'padsize' bytes
+Opts  :
+  -c=<char> = character to pad file with (in hex)
+@PARK
+Syntax: Park <devname> [<devname>]
+Usage : Park the heads on a hard disk device
+@PROCS
+Syntax: Procs [<opts>]
+Usage : Displays a list of processes running in the system
+Opts  :
+  -e = display all processes in the system
+@PROMPT
+Syntax: Prompt <message>
+Usage : Prints message and waits for a key
+@PWD
+Syntax: Pwd
+Usage : Prints the current data directory path
+@PXD
+Syntax: Pxd
+Usage : Prints the current execution directory path
+@RENAME
+Syntax: Rename <pathlist> <filename>
+Usage : Gives the file or directory a new name
+@SAVE
+Syntax: <path> <modname> [<modname> [...]]
+Usage : Save memory module(s) in a file
+@SETIME
+Syntax: Setime [yyyy/mm/dd hh:mm:ss]
+Usage : Sets and activates the system clock
+@SETPR
+Syntax: Setpr <procId> <num>
+Usage : Sets the priority of the specified process to num
+@SHELL
+Syntax: Shell <arglist>
+Usage : NitrOS-9 command interpreter
+@SLEEP
+Syntax: Sleep <ticks>
+Usage : Suspend process for a period of time
+@TEE
+Syntax: Tee [<path>]        
+Usage : Copy standard input to multiple output paths
+@TMODE
+Syntax: Tmode [.<path>] [<params>]
+Usage : Displays or changes the operating parameters of the terminal
+@TOUCH
+Syntax: Touch [<opts>] <path> [<opts>]
+Usage : Update the date of a file
+Opts  :
+  -c = don't create files
+  -q = don't quit on error
+  -x = search execution directory
+  -z = get files from standard input
+  -z=<file> get files from <file>
+@TSMON
+Syntax: TSMon [<pathlist>]
+Usage : Timesharing monitor
+@TUNEPORT
+Syntax: Tuneport <device> [value]
+Usage : Adjust the baud value for the serial port
+@UNLINK
+Syntax: Unlink <modname>
+Usage : Unlinks one or more modules from memory
+@VERIFY
+Syntax: Verify [<opts>]
+Usage : Verify or update module header and CRC 
+Opts  :
+  -u = update module during check
+@XMODE
+Syntax: XMode <devname> [params]
+Usage : Displays or changes the parameters of an SCF device

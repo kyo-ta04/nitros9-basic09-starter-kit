@@ -1,0 +1,251 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2013 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus II 32-bit
+# Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
+# Date created = 17:55:48  October 20, 2013
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		Microcomputer_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus II software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone II"
+set_global_assignment -name DEVICE EP2C5T144C8
+set_global_assignment -name TOP_LEVEL_ENTITY NASCOM4
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "17:55:48  OCTOBER 20, 2013"
+set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+
+set_location_assignment PIN_17 -to clk
+set_location_assignment PIN_144 -to n_SwRst
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to n_SwRst
+
+set_location_assignment PIN_18 -to n_SwWarmRst
+set_location_assignment PIN_21 -to n_SwNMI
+
+set_location_assignment PIN_9 -to n_LED9Halt
+set_location_assignment PIN_7 -to n_LED7Drive
+set_location_assignment PIN_3 -to n_LED3SdActive
+
+set_location_assignment PIN_122 -to sRamData[7]
+set_location_assignment PIN_120 -to sRamData[6]
+set_location_assignment PIN_118 -to sRamData[5]
+set_location_assignment PIN_114 -to sRamData[4]
+set_location_assignment PIN_112 -to sRamData[3]
+set_location_assignment PIN_113 -to sRamData[2]
+set_location_assignment PIN_115 -to sRamData[1]
+set_location_assignment PIN_119 -to sRamData[0]
+set_location_assignment PIN_32 -to sRamAddress[18]
+set_location_assignment PIN_31 -to sRamAddress[17]
+set_location_assignment PIN_25 -to sRamAddress[16]
+set_location_assignment PIN_8 -to sRamAddress[15]
+set_location_assignment PIN_30 -to sRamAddress[14]
+set_location_assignment PIN_24 -to sRamAddress[13]
+set_location_assignment PIN_28 -to sRamAddress[12]
+set_location_assignment PIN_136 -to sRamAddress[11]
+set_location_assignment PIN_132 -to sRamAddress[10]
+set_location_assignment PIN_139 -to sRamAddress[9]
+set_location_assignment PIN_142 -to sRamAddress[8]
+set_location_assignment PIN_143 -to sRamAddress[7]
+set_location_assignment PIN_141 -to sRamAddress[6]
+set_location_assignment PIN_137 -to sRamAddress[5]
+set_location_assignment PIN_135 -to sRamAddress[4]
+set_location_assignment PIN_133 -to sRamAddress[3]
+set_location_assignment PIN_129 -to sRamAddress[2]
+set_location_assignment PIN_125 -to sRamAddress[1]
+set_location_assignment PIN_121 -to sRamAddress[0]
+set_location_assignment PIN_4 -to n_sRamWE
+set_location_assignment PIN_126 -to n_sRamCS1
+set_location_assignment PIN_79 -to n_sRamCS2
+set_location_assignment PIN_134 -to n_sRamOE
+
+set_location_assignment PIN_69 -to clk4
+set_location_assignment PIN_67 -to clk1
+set_location_assignment PIN_58 -to pio_cs_n
+set_location_assignment PIN_71 -to ctc_cs_n
+set_location_assignment PIN_64 -to fdc_cs_n
+set_location_assignment PIN_70 -to porte4_wr
+set_location_assignment PIN_87 -to port00_rd_n
+
+set_location_assignment PIN_72 -to BrReset_n
+set_location_assignment PIN_57 -to BrM1_n
+set_location_assignment PIN_63 -to BrIORQ_n
+set_location_assignment PIN_59 -to BrRD_n
+set_location_assignment PIN_60 -to BrWr_n
+
+set_location_assignment PIN_104 -to BrBufOE_n
+set_location_assignment PIN_96 -to BrBufWr
+
+set_location_assignment PIN_44 -to ps2Clk
+set_location_assignment PIN_45 -to ps2Data
+
+set_location_assignment PIN_100 -to NasKbdClk
+set_location_assignment PIN_99 -to NasKbdRst
+
+set_location_assignment PIN_101 -to SerRxToNas
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SerRxToNas
+set_location_assignment PIN_103 -to SerTxFrNas
+set_location_assignment PIN_93 -to SerRxBdClk
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SerRxBdClk
+set_location_assignment PIN_94 -to SerTxBdClk
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to SerTxBdClk
+
+set_location_assignment PIN_97 -to n_INT
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to n_INT
+
+set_location_assignment PIN_42 -to sdMISO
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to sdMISO
+set_location_assignment PIN_43 -to sdSCLK
+set_location_assignment PIN_40 -to sdMOSI
+set_location_assignment PIN_41 -to sdCS
+
+set_location_assignment PIN_51 -to PriVSync
+set_location_assignment PIN_55 -to PriHSync
+set_location_assignment PIN_53 -to PriVideo
+set_location_assignment PIN_48 -to SecVSync
+set_location_assignment PIN_47 -to SecHSync
+set_location_assignment PIN_52 -to SecVideo
+
+set_location_assignment PIN_22 -to FdcRdy_n
+set_location_assignment PIN_88 -to FdcIntr
+set_location_assignment PIN_91 -to FdcDrq
+
+set_location_assignment PIN_65 -to Spare65
+set_location_assignment PIN_89 -to SpareIn89
+set_location_assignment PIN_86 -to Spare86
+set_location_assignment PIN_74 -to Spare74
+set_location_assignment PIN_75 -to Spare75
+set_location_assignment PIN_92 -to Spare92
+set_location_assignment PIN_90 -to SpareIn90
+
+
+
+
+
+
+set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+set_global_assignment -name OPTIMIZE_HOLD_TIMING "IO PATHS AND MINIMUM TPD PATHS"
+set_global_assignment -name OPTIMIZE_MULTI_CORNER_TIMING ON
+set_global_assignment -name WEAK_PULL_UP_RESISTOR OFF
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name USE_CONFIGURATION_DEVICE ON
+set_global_assignment -name RESERVE_ALL_UNUSED_PINS "AS INPUT TRI-STATED WITH WEAK PULL-UP"
+set_global_assignment -name VHDL_INPUT_VERSION VHDL_1993
+set_global_assignment -name VHDL_SHOW_LMF_MAPPING_MESSAGES OFF
+set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[18]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[17]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[16]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[15]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[14]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[13]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[12]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[11]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[10]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[9]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[8]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[7]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[6]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[5]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[4]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[3]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[2]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[1]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to sRamAddress[0]
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to n_sRamCS1
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to n_sRamCS2
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to n_sRamOE
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to n_sRamWE
+
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to clk1
+set_instance_assignment -name CURRENT_STRENGTH_NEW 12MA -to clk4
+
+set_global_assignment -name SDC_FILE NASCOM4.out.sdc
+set_global_assignment -name VHDL_FILE ../Components/MMAPPER/mem_mapper.vhd
+set_global_assignment -name VHDL_FILE ../Components/MMAPPER2/mem_mapper2.vhd
+set_global_assignment -name VHDL_FILE ../Components/GPIO/gpio.vhd
+set_global_assignment -name VHDL_FILE ../Components/nasVDU/nasVDU.vhd
+set_global_assignment -name VHDL_FILE ../Components/nasVDU/nasVDU_render.vhd
+set_global_assignment -name QIP_FILE ../Components/nasVDU/DisplayRam1K.qip
+set_global_assignment -name QIP_FILE ../Components/nasVDU/DisplayRam2K.qip
+set_global_assignment -name QIP_FILE ../Components/nasVDU/nasCharGenRam4K.qip
+set_global_assignment -name VHDL_FILE ../Components/Z80/T80s.vhd
+set_global_assignment -name VHDL_FILE ../Components/Z80/T80.vhd
+set_global_assignment -name VHDL_FILE ../Components/Z80/T80_ALU.vhd
+set_global_assignment -name VHDL_FILE ../Components/Z80/T80_MCode.vhd
+set_global_assignment -name VHDL_FILE ../Components/Z80/T80_Pack.vhd
+set_global_assignment -name VHDL_FILE ../Components/Z80/T80_Reg.vhd
+set_global_assignment -name VHDL_FILE ../Components/SDCARD/sd_controller.vhd
+set_global_assignment -name VHDL_FILE ../Components/UART/bufferedUART6402.vhd
+set_global_assignment -name VHDL_FILE ../Components/nasKBDPS2/nasKBDPS2.vhd
+set_global_assignment -name VHDL_FILE ../Components/nasBridge/nasBridge.vhd
+set_global_assignment -name VHDL_FILE NASCOM4.vhd
+set_global_assignment -name SOURCE_FILE NASCOM4.qsf
+set_global_assignment -name CDF_FILE output_files/NASCOM4.cdf
+set_global_assignment -name QIP_FILE ../RAMS/InternalRam1K.qip
+set_global_assignment -name QIP_FILE ../RAMS/InternalRam2K.qip
+set_global_assignment -name QIP_FILE ../RAMS/InternalRam4K.qip
+set_global_assignment -name QIP_FILE ../ROMS/Z80/Z80_NASSYS3_ROM.qip
+set_global_assignment -name QIP_FILE ../ROMS/Z80/Z80_MAP80VFC_ROM.qip
+set_global_assignment -name QIP_FILE ../ROMS/Z80/Z80_SBOOT_ROM.qip
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
